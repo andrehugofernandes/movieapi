@@ -1,6 +1,6 @@
 import { View, Text, Platform, Pressable, ScrollView } from 'react-native'
 import React from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaView } from 'react-native'
 import { StatusBar } from "expo-status-bar"
 import { Bars3CenterLeftIcon, MagnifyingGlassIcon } from 'react-native-heroicons/outline'
 import { styles } from '../theme'
@@ -56,7 +56,7 @@ export default function HomeScreens() {
       {/* Search bar and logo */}
       <SafeAreaView className={ios ? "-mb-2 bg-neutral-700 z-20" : "mb-3 pb-6 mt-4 bg-neutral-700 z-20"}>
         <StatusBar style="light" />
-        <View className="flex-row justify-between items-center mx-4">
+        <View className="flex-row justify-between items-center mx-4 mb-4">
           <Pressable>
             <Bars3CenterLeftIcon size="30" strokeWidth={2} color="white" />
           </Pressable>
