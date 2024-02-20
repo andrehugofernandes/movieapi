@@ -110,7 +110,8 @@ export default function SearchScreen() {
             </ScrollView>
           ) : (
             <View className="flex-row justify-center">
-              <Image source={require('../assets/images/search.png')}
+              <Image 
+                source={require('../assets/images/search.png')}
                 className="h-96 w-96 "
               />
             </View>
