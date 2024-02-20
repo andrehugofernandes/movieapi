@@ -10,6 +10,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Cast from '../components/cast';
 import MovieList from '../components/movieList';
 import Loading from '../components/loading';
+import { fecthdMovieDetails, fecthdMovieCredits, fecthSimilarMovies } from '../api/moviedb';
+import { image500 } from '../api/moviedb';
 
 var { width, height } = Dimensions.get('window');
 const ios = Platform.OS == 'ios';
@@ -20,13 +22,40 @@ export default function MovieScreen() {
   const { params: item } = useRoute();
   const navigation = useNavigation();
   const [isFavourite, toggleFavourite] = useState(false);
-  const [cast, setCast] = useState([1, 2, 3, 4, 5]);
-  const [similarMovies, setSimilarMovies] = useState([1, 2, 3, 4, 5]);
+  const [cast, setCast] = useState([]);
+  const [similarMovies, setSimilarMovies] = useState([]);
   const [loading, setLoading] = useState(false)
+  const [movie, setMovie] = useState({});
 
+  // Fetch movie details API
   useEffect(() => {
-    // Fetch movie details API
-  }, [item])
+    //console.log('ITEM_ID', item.id);
+    setLoading(true);
+    getMovieDetails(item.id);
+    getMovieCredits(item.id);
+    getSimilarMovies(item.id);
+  }, [item]);
+
+  const getMovieDetails = async id => {
+    const data = await fecthdMovieDetails(id);
+    if (data) setMovie(data);
+    setLoading(false);
+  }
+
+  const getMovieCredits = async id => {
+    const data = await fecthdMovieCredits(id);
+    if (data && data.cast) setCast(data.cast);
+   
+  }
+
+  const getSimilarMovies = async id => {
+    const data = await fecthSimilarMovies(id);
+    //console.log('SIMILAR_MOVIES', data);
+    if (data && data.results) setSimilarMovies(data.results);
+   
+  }
+
+
   return (
     <ScrollView
       contentContainerStyle={{ paddingBottom: 20 }}
@@ -51,7 +80,8 @@ export default function MovieScreen() {
             (
               <View>
                 <Image
-                  source={require('../assets/images/capitain-marvel.png')}
+                  //source={require('../assets/images/capitain-marvel.png')}
+                  source={{ uri: image500(movie?.poster_path) }}
                   style={{ width, height: height * 0.55 }}
                 />
                 <LinearGradient
@@ -63,49 +93,46 @@ export default function MovieScreen() {
                 />
               </View>
             )
-        }       
+        }
         {/* Movie details */}
         <View style={{ marginTop: -(height * 0.09) }} className="space-y-3">
           {/* Movie title */}
           <Text className="text-[#ffc719] shadow-xl text-center text-3xl font-bold tracking-wider">
-            {movieName} {/*item?.title*/}
+            {movie?.title}
           </Text>
           {/* Status, Release, Runtime */}
-          <Text
-            className="text-neutral-400 font-semibold text-base text-center"
-          >
-            Released • 2020 • 170 min
-            {/*{item?.status} • {item?.release_date} • {item?.runtime} min*/}
-          </Text>
+          {
+            movie?.id ? (
+              <Text className="text-neutral-400 font-semibold text-base text-center">
+                {movie?.status} • {movie?.release_date?.split('-')[0]} • {movie?.runtime} min
+              </Text>
+
+            ) : null
+          }
           {/* Genres */}
           <View className=" flex-row justify-center space-x-2">
-            <Text className="text-neutral-400 text-sm">Action</Text>
-            <Text className="text-neutral-400 text-sm">•</Text>
-            <Text className="text-neutral-400 text-sm">Adventure</Text>
-            <Text className="text-neutral-400 text-sm">•</Text>
-            <Text className="text-neutral-400 text-sm">Fantasy</Text>
+            {
+              movie?.genres?.map((genre, index) => {
+                let showDot = index + 1 != movie.genres.length;
+                return (
+                  <Text key={index} className="text-neutral-400 text-sm">
+                    {genre?.name} {showDot ? "•" : null}
+                  </Text>
+                )
+              }
+              )
+            }
           </View>
         </View>
         {/* Movie description */}
-        <Text className="text-neutral-400 mx-6 my-4 tracking-wide text-justify">
-          Captain Marvel” is a 2019 American superhero film based on the Marvel
-          Comics character Carol Danvers, also known as Captain Marvel. The film
-          is set in the 1990s and follows the journey of Carol Danvers as she
-          becomes one of the universe’s most powerful heroes1. The film is part of
-          the Marvel Cinematic Universe (MCU) and was directed by Anna Boden and
-          Ryan Fleck. The screenplay was co-written by Anna Boden, Ryan Fleck,
-          and Geneva Robertson-Dworet1. The story unfolds as Earth is caught in
-          the center of a galactic conflict between two alien civilizations.
-          After crashing an experimental aircraft, Air Force pilot Carol Danvers
-          is discovered by the Kree and trained as a member of the elite Starforce
-          Military under the command of her mentor Yon-Rogg2.
-          {/*{item?.overview}*/}
+        <Text className="text-neutral-400 mx-6 my-4 tracking-wide text-justify">          
+          {movie?.overview}
         </Text>
         {/* Movie cast */}
-        <Cast navigation={navigation} cast={cast} />
+        {cast.length > 0 && <Cast navigation={navigation} cast={cast} />}
 
         {/* Similar movies */}
-        <MovieList title="Similar Movies" hideSeeAll={true} data={similarMovies} />
+        {similarMovies.length > 0 && <MovieList title="Similar Movies" hideSeeAll={true} data={similarMovies} />}
 
       </View>
     </ScrollView>
